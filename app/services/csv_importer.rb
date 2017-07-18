@@ -9,24 +9,28 @@ class CsvImporter
     end
 
     def import_historical!
-      data = read_historical_share_data
-      historical = data.collect { |record| Daily.new(record) }
-      Daily.import(historical)
+      path = Rails.root.join('data', 'asx', 'prices').to_s
+      files = Dir.glob(File.join(path, '**', '*.txt'))
+      count = files.size
+      files.each_with_index do |file, i|
+        puts "Loading file #{i + 1} of #{count}: #{file}"
+        data = read_historical_share_data([file])
+        historical = data.collect { |record| Daily.new(record) }
+        Daily.import(historical)
+      end
     end
 
     def read_company_csv
       companies = []
-      filename = '/Users/wtfiwtz/Desktop/_Large/Downloads/shares/ASXListedCompanies.csv'
+      filename = Rails.root.join('data', 'asx', 'securities', 'ASXListedCompanies.csv').to_s
       CSV.foreach(filename) do |row|
         companies.push(name: row[0], symbol: row[1], category_name: row[2])
       end
       companies
     end
 
-    def read_historical_share_data
+    def read_historical_share_data(files)
       dataset = []
-      path = '/Users/wtfiwtz/Desktop/_Large/Downloads/shares/week20170407'
-      files = Dir.glob(File.join(path, '*.txt'))
       files.each do |filename|
         CSV.foreach(filename) do |row|
           # 3DP,20170407,0.028,0.028,0.028,0.028,191270

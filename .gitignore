@@ -9,3 +9,5 @@
 /yarn-error.log
 .byebug_history
 .idea/
+data/
+**/.DS_Store
