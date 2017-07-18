@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170718095049) do
+ActiveRecord::Schema.define(version: 20170718113312) do
 
   create_table "chains", force: :cascade do |t|
     t.string "symbol"
@@ -21,6 +21,9 @@ ActiveRecord::Schema.define(version: 20170718095049) do
     t.integer "timeframe"
     t.decimal "change_val"
     t.float "change_pct"
+    t.index ["change_pct"], name: "index_chains_on_change_pct"
+    t.index ["finish_at"], name: "index_chains_on_finish_at"
+    t.index ["symbol", "start_at"], name: "index_chains_on_symbol_and_start_at"
   end
 
   create_table "companies", force: :cascade do |t|
@@ -41,6 +44,8 @@ ActiveRecord::Schema.define(version: 20170718095049) do
     t.decimal "close"
     t.decimal "volume"
     t.index ["company_id"], name: "index_dailies_on_company_id"
+    t.index ["date"], name: "index_dailies_on_date"
+    t.index ["symbol", "date"], name: "index_dailies_on_symbol_and_date"
   end
 
   create_table "daily_summaries", force: :cascade do |t|
@@ -54,6 +59,8 @@ ActiveRecord::Schema.define(version: 20170718095049) do
     t.decimal "curr_val"
     t.decimal "change_val"
     t.float "change_pct"
+    t.index ["date"], name: "index_daily_summaries_on_date"
+    t.index ["symbol", "date"], name: "index_daily_summaries_on_symbol_and_date"
   end
 
 end

@@ -1,14 +1,19 @@
 class MaterializedViews
   class << self
-    def materialize!(kind = :second, pick = 2)
-      symbols = Daily.distinct.limit(10).pluck(:symbol).sort
-      if %i[first second].include?(kind)
-        results1 = symbols.collect { |symbol| first_order(symbol) }
-        results1 = persist_summary(results1)
-      end
-      if kind == :second
-        results2 = symbols.collect { |symbol| second_order(symbol, pick, results1) }
-        results2 = persist_chain(results2)
+    def materialize!(kind = :second, pick = 100)
+      symbols = Daily.distinct.order(symbol: :asc).pluck(:symbol)
+      puts 'Building 1st order data...'
+      symbols.in_groups_of(100, false) do |batch|
+        if %i[first second].include?(kind)
+          results1 = batch.collect { |symbol| first_order(symbol) }
+          results1 = persist_summary(results1)
+        end
+        if kind == :second
+          puts 'Building 2nd order data...'
+          results2 = batch.collect { |symbol| second_order(symbol, pick, results1) }
+          results2 = persist_chain(results2)
+        end
+        puts 'Saved!'
       end
     end
 
@@ -38,6 +43,7 @@ class MaterializedViews
 
     def first_order(symbol)
       results = Daily.where(symbol: symbol).order(date: :asc)
+      puts "... #{symbol}"
       close_prices = results.pluck(:date, :close).collect { |ary| { symbol: symbol, date: ary[0], close: ary[1], close_float: ary[1].to_f } }
       date_changes = []
       close_prices.each_with_index do |hsh, i|
@@ -48,7 +54,8 @@ class MaterializedViews
       date_changes
     end
 
-    def second_order(symbol, pick = 2, results1 = nil)
+    def second_order(symbol, pick = 100, results1 = nil)
+      puts "... #{symbol}"
       date_changes = locate_date_changes_or_exec_first_order(symbol, results1)
       best_days = locate_best_days(date_changes, pick)
       locate_chains(date_changes, best_days)
@@ -64,7 +71,7 @@ class MaterializedViews
 
     def calc_change(curr, prev, i)
       calc = { symbol: curr[:symbol], date_from: prev[:date], date_to: curr[:date],
-               days: (curr[:date] - prev[:date]).to_f / 86400,
+               days: (curr[:date] - prev[:date]).to_f / 86_400,
                change_val: curr[:close_float] - prev[:close_float],
                curr_val: curr[:close_float],
                prev_val: prev[:close_float],
@@ -75,7 +82,7 @@ class MaterializedViews
 
     def create_chain(curr, prev)
       calc = { symbol: curr[:symbol], date_from: prev[:date] - prev[:timeframe], date_to: curr[:date],
-               days: curr[:timeframe].to_f / 86400,
+               days: curr[:timeframe].to_f / 86_400,
                change_val: curr[:curr_val] - prev[:prev_val],
                curr_val: curr[:curr_val],
                prev_val: prev[:prev_val],
@@ -88,7 +95,7 @@ class MaterializedViews
       calc
     end
 
-    def locate_best_days(date_changes, pick = 2)
+    def locate_best_days(date_changes, pick = 100)
       pcts = date_changes.collect { |x| x[:change_pct] }.sort[-pick..-1] || []
       date_changes.select { |x| pcts.include?(x[:change_pct]) }
     end
