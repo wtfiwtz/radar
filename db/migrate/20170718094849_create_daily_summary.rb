@@ -1,7 +1,7 @@
 class CreateDailySummary < ActiveRecord::Migration[5.1]
   def change
     create_table :daily_summaries do |t|
-      # t.references :security, foreign_key: true, nullable: true
+      t.references :company, foreign_key: true, nullable: true
       t.string :symbol
       t.string :kind
       t.text :parameters

@@ -1,7 +1,7 @@
 class CreateDaily < ActiveRecord::Migration[5.1]
   def change
     create_table :dailies do |t|
-      t.references :company
+      t.references :company, foreign_key: true, nullable: true
       t.string :symbol
       t.datetime :date
       t.decimal :open

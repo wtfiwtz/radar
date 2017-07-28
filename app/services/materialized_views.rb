@@ -11,7 +11,7 @@ class MaterializedViews
         if kind == :second
           puts 'Building 2nd order data...'
           results2 = batch.collect { |symbol| second_order(symbol, pick, results1) }
-          results2 = persist_chain(results2)
+          _results2 = persist_chain(results2)
         end
         puts 'Saved!'
       end

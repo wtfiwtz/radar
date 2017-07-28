@@ -49,6 +49,7 @@ ActiveRecord::Schema.define(version: 20170718113312) do
   end
 
   create_table "daily_summaries", force: :cascade do |t|
+    t.integer "company_id"
     t.string "symbol"
     t.string "kind"
     t.text "parameters"
@@ -59,6 +60,7 @@ ActiveRecord::Schema.define(version: 20170718113312) do
     t.decimal "curr_val"
     t.decimal "change_val"
     t.float "change_pct"
+    t.index ["company_id"], name: "index_daily_summaries_on_company_id"
     t.index ["date"], name: "index_daily_summaries_on_date"
     t.index ["symbol", "date"], name: "index_daily_summaries_on_symbol_and_date"
   end
