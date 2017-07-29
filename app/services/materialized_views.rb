@@ -20,7 +20,7 @@ class MaterializedViews
     def persist_summary(results1)
       summaries = results1.collect do |symbol|
         symbol.collect do |r|
-          DailySummary.new(symbol: r[:symbol], index: r[:index],
+          DailySummary.new(company_id: r[:company_id], symbol: r[:symbol], index: r[:index],
                            kind: :differential, date: r[:date_to], timeframe: 86_400,
                            curr_val: r[:curr_val], prev_val: r[:prev_val],
                            change_val: r[:change_val], change_pct: r[:change_pct])
@@ -33,7 +33,7 @@ class MaterializedViews
     def persist_chain(results2)
       chains = results2.collect do |symbol|
         symbol.collect do |r|
-          Chain.new(symbol: r[:symbol], order: 2, start_at: r[:date_from], finish_at: r[:date_to], width: r[:days] * 86_400,
+          Chain.new(company: r[:company], symbol: r[:symbol], order: 2, start_at: r[:date_from], finish_at: r[:date_to], width: r[:days] * 86_400,
                     timeframe: 86_400, change_val: r[:change_val], change_pct: r[:change_pct])
         end
       end.flatten
@@ -42,9 +42,10 @@ class MaterializedViews
     end
 
     def first_order(symbol)
-      results = Daily.where(symbol: symbol).order(date: :asc)
+      results = Daily.includes(:company).where(symbol: symbol).order(date: :asc)
+      company = results.first&.company
       puts "... #{symbol}"
-      close_prices = results.pluck(:date, :close).collect { |ary| { symbol: symbol, date: ary[0], close: ary[1], close_float: ary[1].to_f } }
+      close_prices = results.pluck(:date, :close).collect { |ary| { company: company, symbol: symbol, date: ary[0], close: ary[1], close_float: ary[1].to_f } }
       date_changes = []
       close_prices.each_with_index do |hsh, i|
         next if i.zero?
@@ -70,7 +71,7 @@ class MaterializedViews
     end
 
     def calc_change(curr, prev, i)
-      calc = { symbol: curr[:symbol], date_from: prev[:date], date_to: curr[:date],
+      calc = { company: curr[:company], symbol: curr[:symbol], date_from: prev[:date], date_to: curr[:date],
                days: (curr[:date] - prev[:date]).to_f / 86_400,
                change_val: curr[:close_float] - prev[:close_float],
                curr_val: curr[:close_float],
@@ -81,7 +82,7 @@ class MaterializedViews
     end
 
     def create_chain(curr, prev)
-      calc = { symbol: curr[:symbol], date_from: prev[:date] - prev[:timeframe], date_to: curr[:date],
+      calc = { company: curr[:company], symbol: curr[:symbol], date_from: prev[:date] - prev[:timeframe], date_to: curr[:date],
                days: curr[:timeframe].to_f / 86_400,
                change_val: curr[:curr_val] - prev[:prev_val],
                curr_val: curr[:curr_val],

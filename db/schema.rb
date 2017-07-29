@@ -13,6 +13,7 @@
 ActiveRecord::Schema.define(version: 20170718113312) do
 
   create_table "chains", force: :cascade do |t|
+    t.integer "company_id"
     t.string "symbol"
     t.integer "order"
     t.datetime "start_at"
@@ -22,6 +23,7 @@ ActiveRecord::Schema.define(version: 20170718113312) do
     t.decimal "change_val"
     t.float "change_pct"
     t.index ["change_pct"], name: "index_chains_on_change_pct"
+    t.index ["company_id"], name: "index_chains_on_company_id"
     t.index ["finish_at"], name: "index_chains_on_finish_at"
     t.index ["symbol", "start_at"], name: "index_chains_on_symbol_and_start_at"
   end
