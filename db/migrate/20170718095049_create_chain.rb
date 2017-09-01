@@ -11,6 +11,8 @@ class CreateChain < ActiveRecord::Migration[5.1]
       t.integer :timeframe
       t.decimal :change_val
       t.float :change_pct
+      t.decimal :prev_val
+      t.decimal :curr_val
     end
   end
 end

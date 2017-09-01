@@ -1,26 +1,36 @@
 class MaterializedViews
   class << self
-    def materialize!(kind = :second, pick = 100)
+    def materialize!(kind = :third, pick = 10)
       symbols = Daily.distinct.order(symbol: :asc).pluck(:symbol)
       puts 'Building 1st order data...'
       symbols.in_groups_of(100, false) do |batch|
-        if %i[first second].include?(kind)
+        if %i[first second third].include?(kind)
           results1 = batch.collect { |symbol| first_order(symbol) }
           results1 = persist_summary(results1)
         end
-        if kind == :second
+        if %i[second third].include?(kind)
           puts 'Building 2nd order data...'
           results2 = batch.collect { |symbol| second_order(symbol, pick, results1) }
-          _results2 = persist_chain(results2)
+          results2 = persist_chain(results2, 2)
+        end
+        if %i[third].include?(kind)
+          puts 'Building 3nd order data...'
+          results3 = batch.collect { |symbol| third_order(symbol, results2) }
+          _results3 = persist_chain(results3, 3)
         end
         puts 'Saved!'
       end
     end
 
+    def clear_materialized!
+      Chain.delete_all
+      DailySummary.delete_all
+    end
+
     def persist_summary(results1)
       summaries = results1.collect do |symbol|
         symbol.collect do |r|
-          DailySummary.new(company_id: r[:company_id], symbol: r[:symbol], index: r[:index],
+          DailySummary.new(company: r[:company], symbol: r[:symbol], index: r[:index],
                            kind: :differential, date: r[:date_to], timeframe: 86_400,
                            curr_val: r[:curr_val], prev_val: r[:prev_val],
                            change_val: r[:change_val], change_pct: r[:change_pct])
@@ -30,11 +40,11 @@ class MaterializedViews
       summaries
     end
 
-    def persist_chain(results2)
+    def persist_chain(results2, order = 2)
       chains = results2.collect do |symbol|
         symbol.collect do |r|
-          Chain.new(company: r[:company], symbol: r[:symbol], order: 2, start_at: r[:date_from], finish_at: r[:date_to], width: r[:days] * 86_400,
-                    timeframe: 86_400, change_val: r[:change_val], change_pct: r[:change_pct])
+          Chain.new(company: r[:company], symbol: r[:symbol], order: order, start_at: r[:date_from], finish_at: r[:date_to], width: r[:days] * 86_400,
+                    timeframe: 86_400, change_val: r[:change_val], change_pct: r[:change_pct], curr_val: r[:curr_val], prev_val: r[:prev_val])
         end
       end.flatten
       Chain.import(chains)
@@ -62,6 +72,35 @@ class MaterializedViews
       locate_chains(date_changes, best_days)
     end
 
+    def third_order(symbol, results2 = nil)
+      puts "... #{symbol}"
+      joined_chains = []
+      last = nil
+      curr_chain = nil
+      results2.each_with_index do |curr, i|
+        next if i.zero?
+        if last
+          if last[:prev_val] < curr[:prev_val] && last[:curr_val] < curr[:curr_val]
+            curr_chain = create_chain(curr, last)
+            next
+          end
+          joined_chains.push(curr_chain) if curr_chain
+          curr_chain = nil
+          last = nil
+        end
+        prev = results2[i - 1]
+        if prev[:prev_val] < curr[:prev_val] && prev[:curr_val] < curr[:curr_val]
+          curr_chain = create_chain(curr, prev)
+          last = prev
+        else
+          joined_chains.push(curr_chain) if curr_chain
+          curr_chain = nil
+        end
+      end
+      joined_chains.push(curr_chain) if curr_chain
+      joined_chains
+    end
+
     private
 
     def locate_date_changes_or_exec_first_order(symbol, results1)
@@ -82,7 +121,7 @@ class MaterializedViews
     end
 
     def create_chain(curr, prev)
-      calc = { company: curr[:company], symbol: curr[:symbol], date_from: prev[:date] - prev[:timeframe], date_to: curr[:date],
+      calc = { company: curr[:company], symbol: curr[:symbol], date_from: (prev[:date] || prev[:start_at]) - (prev[:timeframe] || 0), date_to: (curr[:date] || curr[:finish_at]),
                days: curr[:timeframe].to_f / 86_400,
                change_val: curr[:curr_val] - prev[:prev_val],
                curr_val: curr[:curr_val],
@@ -97,7 +136,8 @@ class MaterializedViews
     end
 
     def locate_best_days(date_changes, pick = 100)
-      pcts = date_changes.collect { |x| x[:change_pct] }.sort[-pick..-1] || []
+      max = date_changes.count
+      pcts = date_changes.collect { |x| x[:change_pct] }.sort[-[pick, max].min..-1] || []
       date_changes.select { |x| pcts.include?(x[:change_pct]) }
     end
 

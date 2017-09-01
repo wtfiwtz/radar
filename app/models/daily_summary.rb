@@ -1,3 +1,3 @@
 class DailySummary < ApplicationRecord
-  belongs_to :company
+  belongs_to :company, optional: true
 end

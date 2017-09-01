@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170718113312) do
+ActiveRecord::Schema.define(version: 20170901080539) do
 
   create_table "chains", force: :cascade do |t|
     t.integer "company_id"
@@ -22,6 +22,8 @@ ActiveRecord::Schema.define(version: 20170718113312) do
     t.integer "timeframe"
     t.decimal "change_val"
     t.float "change_pct"
+    t.decimal "prev_val"
+    t.decimal "curr_val"
     t.index ["change_pct"], name: "index_chains_on_change_pct"
     t.index ["company_id"], name: "index_chains_on_company_id"
     t.index ["finish_at"], name: "index_chains_on_finish_at"
@@ -34,6 +36,24 @@ ActiveRecord::Schema.define(version: 20170718113312) do
     t.string "category_name"
     t.integer "category_id"
     t.index ["category_id"], name: "index_companies_on_category_id"
+  end
+
+  create_table "cryptos", force: :cascade do |t|
+    t.datetime "date"
+    t.string "sym"
+    t.string "name"
+    t.string "symbol"
+    t.integer "rank"
+    t.decimal "price_usd"
+    t.decimal "price_btc"
+    t.decimal "volume_24h_usd"
+    t.decimal "market_cap_usd"
+    t.float "available_supply"
+    t.float "total_supply"
+    t.float "percent_change_1h"
+    t.float "percent_change_24h"
+    t.float "percent_change_7d"
+    t.integer "last_updated"
   end
 
   create_table "dailies", force: :cascade do |t|

@@ -44,6 +44,7 @@ GEM
       public_suffix (~> 2.0, >= 2.0.2)
     arel (8.0.0)
     ast (2.3.0)
+    awesome_print (1.8.0)
     bindex (0.5.0)
     builder (3.2.3)
     byebug (9.0.6)
@@ -88,6 +89,7 @@ GEM
     mini_portile2 (2.2.0)
     minitest (5.10.2)
     multi_json (1.12.1)
+    mysql2 (0.4.8)
     nio4r (2.1.0)
     nokogiri (1.8.0)
       mini_portile2 (~> 2.2.0)
@@ -202,11 +204,13 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord-import
+  awesome_print
   byebug
   capybara (>= 2.13)
   coffee-rails (>= 4.2)
   jbuilder (>= 2.5)
   listen (>= 3.0.5)
+  mysql2
   pg
   puma (>= 3.7)
   rails (>= 5.1.2)
@@ -223,4 +227,4 @@ DEPENDENCIES
   web-console (>= 3.3.0)
 
 BUNDLED WITH
-   1.15.1
+   1.15.3
