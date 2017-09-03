@@ -22,9 +22,23 @@ class Coinmarketcap
 
     def load_results(r, date = Time.now.utc)
       bulk_set = r.collect do |row|
-        Crypto.new(row.merge(date: date, sym: row['id'], volume_24h_usd: row['24h_volume_usd']).except('id', '24h_volume_usd'))
+        Crypto.new(row.merge(date: date, crypto_currency: nil, sym: row['id'], volume_24h_usd: row['24h_volume_usd']).except('id', '24h_volume_usd'))
       end
-      Crypto.import(bulk_set)
+      results = Crypto.import(bulk_set)
+    end
+
+    def load_initial_results
+      Crypto.delete_all
+      load_results(CoinmarketcapResults.results1, 24.hours.ago)
+      load_results(CoinmarketcapResults.results2, 12.hours.ago)
+      load_results(CoinmarketcapResults.results3)
+      crypto_details = Crypto.distinct.pluck(:sym, :name)
+      crypto_details.each do |pair|
+        sym = pair[0]
+        name = pair[1]
+        currency = CryptoCurrency.create!(sym: sym, name: name)
+        Crypto.where(sym: sym).update_all(crypto_currency_id: currency.id)
+      end
     end
   end
 end

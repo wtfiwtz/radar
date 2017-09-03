@@ -1,7 +1,13 @@
 class CreateCrypto < ActiveRecord::Migration[5.1]
   def change
+    create_table :crypto_currencies do |t|
+      t.string :sym
+      t.string :name
+    end
+
     create_table :cryptos do |t|
       t.datetime :date
+      t.references :crypto_currency, null: true
       t.string :sym
       t.string :name
       t.string :symbol

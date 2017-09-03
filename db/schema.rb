@@ -38,8 +38,14 @@ ActiveRecord::Schema.define(version: 20170901080539) do
     t.index ["category_id"], name: "index_companies_on_category_id"
   end
 
+  create_table "crypto_currencies", force: :cascade do |t|
+    t.string "sym"
+    t.string "name"
+  end
+
   create_table "cryptos", force: :cascade do |t|
     t.datetime "date"
+    t.integer "crypto_currency_id"
     t.string "sym"
     t.string "name"
     t.string "symbol"
@@ -54,6 +60,7 @@ ActiveRecord::Schema.define(version: 20170901080539) do
     t.float "percent_change_24h"
     t.float "percent_change_7d"
     t.integer "last_updated"
+    t.index ["crypto_currency_id"], name: "index_cryptos_on_crypto_currency_id"
   end
 
   create_table "dailies", force: :cascade do |t|

@@ -1,0 +1,19 @@
+table border='1'
+  tr
+    th Date
+    th Rank
+    th Symbol
+    th Name
+    th % 1h
+    th % 24h
+    th % 7d
+
+  - @cryptos.each do |crypto|
+    tr
+      td= crypto.cryptos.first.date.in_time_zone('Australia/Melbourne').strftime('%F %T')
+      td= rank_change(crypto)
+      td= crypto.cryptos.first.symbol
+      td= crypto.cryptos.first.name
+      td= pct_change(crypto.cryptos.first.percent_change_1h)
+      td= pct_change(crypto.cryptos.first.percent_change_24h)
+      td= pct_change(crypto.cryptos.first.percent_change_7d)

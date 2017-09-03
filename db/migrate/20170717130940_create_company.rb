@@ -4,7 +4,7 @@ class CreateCompany < ActiveRecord::Migration[5.1]
       t.string :symbol
       t.string :name
       t.string :category_name
-      t.references :category, nullable: true
+      t.references :category, null: true
     end
   end
 end
