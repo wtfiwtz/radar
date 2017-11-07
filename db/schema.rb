@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170901080539) do
+ActiveRecord::Schema.define(version: 20171107182430) do
 
   create_table "chains", force: :cascade do |t|
     t.integer "company_id"
@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 20170901080539) do
     t.float "percent_change_24h"
     t.float "percent_change_7d"
     t.integer "last_updated"
+    t.float "max_supply"
     t.index ["crypto_currency_id"], name: "index_cryptos_on_crypto_currency_id"
   end
 
