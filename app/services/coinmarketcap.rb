@@ -5,6 +5,12 @@ require_relative './coinmarketcap_results'
 
 class Coinmarketcap
   class << self
+    def load!
+      results = market_caps
+      load_results(results)
+      update_symbols
+    end
+
     def market_caps
       uri = URI.parse('https://api.coinmarketcap.com/v1/ticker/')
       http = Net::HTTP.new(uri.host, uri.port)
@@ -27,16 +33,16 @@ class Coinmarketcap
       results = Crypto.import(bulk_set)
     end
 
-    def load_initial_results
-      Crypto.delete_all
-      load_results(CoinmarketcapResults.results1, 24.hours.ago)
-      load_results(CoinmarketcapResults.results2, 12.hours.ago)
-      load_results(CoinmarketcapResults.results3)
+    def update_symbols
+      # Crypto.delete_all
+      # load_results(CoinmarketcapResults.results1, 24.hours.ago)
+      # load_results(CoinmarketcapResults.results2, 12.hours.ago)
+      # load_results(CoinmarketcapResults.results3)
       crypto_details = Crypto.distinct.pluck(:sym, :name)
       crypto_details.each do |pair|
         sym = pair[0]
         name = pair[1]
-        currency = CryptoCurrency.create!(sym: sym, name: name)
+        currency = CryptoCurrency.where(sym: sym).first_or_create!(name: name)
         Crypto.where(sym: sym).update_all(crypto_currency_id: currency.id)
       end
     end

@@ -1,3 +1,14 @@
+
+# MaterializedViews.clear_materialized!
+# MaterializedViews.materialize!
+# DailySummary.where(symbol: 'KGN').order(date: :desc).pluck(:change_pct)
+# Daily.where(symbol: 'KGN').order(date: :desc).pluck(:date, :close)
+# Daily.where(symbol: 'KGN').order(date: :desc).pluck(:close).collect(&:to_s)
+# Chain.where(symbol: 'KGN', order: 2).order(finish_at: :desc).pluck(:start_at, :finish_at, :change_pct)
+#
+# http://localhost:3000/markets/KGN
+# http://localhost:3000/markets/crypto_market_cap
+
 class MaterializedViews
   class << self
     def materialize!(kind = :third, pick = 10)
