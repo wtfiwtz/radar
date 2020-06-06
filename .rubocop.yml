@@ -1,13 +1,13 @@
 AllCops:
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.7
   Exclude:
     - 'db/**/*'
     - 'bin/**/*'
 
-Rails:
-  Enabled: true
+# Rails:
+#  Enabled: true
 
-Metrics/LineLength:
+Layout/LineLength:
   Description: 'Limit lines to 80 characters.'
   StyleGuide: 'https://github.com/bbatsov/ruby-style-guide#80-character-limits'
   Enabled: false
@@ -27,11 +27,11 @@ Metrics/AbcSize:
   Enabled: true
 
 # Rails 5 only: https://github.com/bbatsov/rubocop/issues/3629
-Rails/HttpPositionalArguments:
-  Enabled: false
+# Rails/HttpPositionalArguments:
+#  Enabled: false
 
-Rails/ApplicationRecord:
-  Enabled: false
+# Rails/ApplicationRecord:
+#  Enabled: false
 
 # Ruby 2.4 only
 Lint/UnifiedInteger:
