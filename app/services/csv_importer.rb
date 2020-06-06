@@ -1,5 +1,8 @@
 require 'csv'
 
+# CsvImporter.import_companies!
+# CsvImporter.import_historical!
+
 class CsvImporter
   class << self
     def import_companies!
@@ -10,7 +13,7 @@ class CsvImporter
 
     def import_historical!
       company_map = build_company_mapping
-      path = Rails.root.join('data', 'asx', 'prices', 'june-2017').to_s
+      path = Rails.root.join('data', 'asx', 'prices', '2020jan').to_s
       files = Dir.glob(File.join(path, '**', '*.txt'))
       count = files.size
       files.each_with_index do |file, i|
