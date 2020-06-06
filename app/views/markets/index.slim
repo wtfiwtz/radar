@@ -1,0 +1,24 @@
+table
+  - @dailies.each do |daily|
+    tr
+      td
+        a> href=market_path(daily.symbol)
+          = daily.symbol
+      td style='font-size:8pt' =daily.company&.name&.truncate(30)
+      td style='font-size:8pt' =daily.company&.category_name&.truncate(20)
+      td style='font-size:8pt'
+        | [
+        a href="https://www2.commsec.com.au/quotes/charts?stockCode=#{daily.symbol}&exchangeCode=ASX" target='chart'
+          | Cht
+        ' &nbsp;
+        a href="https://www2.commsec.com.au/quotes/?stockCode=#{daily.symbol}&exchangeCode=ASX" target='summary'
+          | Summ
+        ' &nbsp;
+        a href="https://www2.commsec.com.au/quotes/announcements?stockCode=#{daily.symbol}&exchangeCode=ASX" target='announce'
+          | Ann
+        ' ]
+      td =daily.curr_val.round(3)
+      td =daily.change_val.round(3)
+      td
+        =(daily.change_pct * 100).round(1)
+        | %

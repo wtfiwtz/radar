@@ -1,6 +1,10 @@
 table
-  - @dailies.each do |daily|
+  - @daily_summaries.each do |daily|
     tr
-      td= daily.date
-      td= daily.close
+      td= daily.date.strftime('%Y-%m-%d')
+      td= daily.curr_val
+      td= daily.change_val.round(3)
+      td
+        = (daily.change_pct * 100).round(1)
+        ' %
       td= locate_chain(daily, @chains)
