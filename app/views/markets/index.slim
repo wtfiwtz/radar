@@ -19,6 +19,4 @@ table
         ' ]
       td =daily.curr_val.round(3)
       td =daily.change_val.round(3)
-      td
-        =(daily.change_pct * 100).round(1)
-        | %
+      td =display_percentage(daily.change_pct)

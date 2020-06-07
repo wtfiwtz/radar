@@ -4,7 +4,5 @@ table
       td= daily.date.strftime('%Y-%m-%d')
       td= daily.curr_val
       td= daily.change_val.round(3)
-      td
-        = (daily.change_pct * 100).round(1)
-        ' %
+      td= display_percentage(daily.change_pct)
       td= locate_chain(daily, @chains)
