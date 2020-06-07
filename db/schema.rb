@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2017_11_07_182430) do
+ActiveRecord::Schema.define(version: 2020_06_07_125549) do
 
   create_table "chains", force: :cascade do |t|
     t.integer "company_id"
@@ -94,6 +94,19 @@ ActiveRecord::Schema.define(version: 2017_11_07_182430) do
     t.index ["company_id"], name: "index_daily_summaries_on_company_id"
     t.index ["date"], name: "index_daily_summaries_on_date"
     t.index ["symbol", "date"], name: "index_daily_summaries_on_symbol_and_date"
+  end
+
+  create_table "watchlist_companies", force: :cascade do |t|
+    t.integer "watchlist_id"
+    t.integer "company_id"
+    t.string "symbol"
+    t.index ["company_id"], name: "index_watchlist_companies_on_company_id"
+    t.index ["watchlist_id"], name: "index_watchlist_companies_on_watchlist_id"
+  end
+
+  create_table "watchlists", force: :cascade do |t|
+    t.string "name"
+    t.integer "priority"
   end
 
   add_foreign_key "chains", "companies"

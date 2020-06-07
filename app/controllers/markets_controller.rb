@@ -1,6 +1,10 @@
 class MarketsController < ApplicationController
+
+  # w = Watchlist.create(name: 'Purchases', priority: 1)
+  # w.companies << Company.where(symbol: %w[QAN RRL MTS LVH DTC BRN DSE NEC WSP CKF Z1P TYR])
+
   def index
-    @watchlist = watchlist
+    @watchlist = Watchlist.includes(:companies).where(name: 'Purchases').pluck('companies.symbol')
     date_to = DateTime.now # new(2020,01,31)
     date_from = date_to - 30.days
     dailies = DailySummary.includes(:company).where(symbol: @watchlist)
