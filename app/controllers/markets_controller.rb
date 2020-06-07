@@ -1,11 +1,11 @@
 class MarketsController < ApplicationController
   def index
     @watchlist = watchlist
-    date_to = DateTime.new(2020,01,31)
+    date_to = DateTime.now # new(2020,01,31)
     date_from = date_to - 30.days
     dailies = DailySummary.includes(:company).where(symbol: @watchlist)
                            .where('date >= ? AND date <= ?', date_from, date_to).to_a
-    sort_dailies_by_percent(dailies, date_to)
+    sort_dailies_by_percent(dailies)
     @dailies, @last_date = symbol_date_hash(dailies)
     @first_date = @last_date - (date_to - date_from).to_i * 1.day.to_i
   end
@@ -55,9 +55,10 @@ class MarketsController < ApplicationController
                             ]
   end
 
-  def sort_dailies_by_percent(dailies, date_to)
+  def sort_dailies_by_percent(dailies)
+    last_date = dailies.collect { |x| x.date.to_datetime }.reject(&:nil?).max
     dailies.sort_by! do |x|
-      next 2**16.to_f * (date_to - x.date.to_datetime).to_i if x.date < date_to
+      next 2**16.to_f * (last_date - x.date.to_datetime).to_i if x.date < last_date
       -x.change_pct
     end
   end
@@ -70,6 +71,15 @@ class MarketsController < ApplicationController
       dailies[daily.symbol] ||= {}
       dailies[daily.symbol][daily.date.to_i] = daily
     end
-    [dailies, last_date]
+    hsh = split_2nd_last(dailies)
+    [hsh, last_date]
+  end
+
+  def split_2nd_last(dailies)
+    positive, negative = dailies.partition do |_sym, value|
+      second_date = value.keys.sort.reverse[1]
+      value[second_date].change_pct >= 0.0
+    end.map(&:to_h)
+    positive.merge(negative)
   end
 end
