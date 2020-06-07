@@ -1,8 +1,13 @@
 class MarketsController < ApplicationController
   def index
     @watchlist = watchlist
-    date = DateTime.new(2020,01,31)
-    @dailies = DailySummary.includes(:company).where(symbol: @watchlist, date: date).order(change_pct: :desc)
+    date_to = DateTime.new(2020,01,31)
+    date_from = date_to - 30.days
+    dailies = DailySummary.includes(:company).where(symbol: @watchlist)
+                           .where('date >= ? AND date <= ?', date_from, date_to).to_a
+    sort_dailies_by_percent(dailies, date_to)
+    @dailies, @last_date = symbol_date_hash(dailies)
+    @first_date = @last_date - (date_to - date_from).to_i * 1.day.to_i
   end
 
   def show
@@ -20,6 +25,8 @@ class MarketsController < ApplicationController
                              .where('cryptos.rank <= ?', 150)
                              .order('cryptos.date DESC, cryptos.rank ASC')
   end
+
+  private
 
   def watchlist
     %w[QAN RRL MTS LVH DTC BRN DSE NEC
@@ -46,5 +53,23 @@ class MarketsController < ApplicationController
                               UBI AHF NOV GMD CCV SPX ARV BSX AGG ZEN PNR TBR
                               MSB IMC CLQ CT1 ALQ SGF BIN FAR MCA RAP ICE IMU
                             ]
+  end
+
+  def sort_dailies_by_percent(dailies, date_to)
+    dailies.sort_by! do |x|
+      next 2**16.to_f * (date_to - x.date.to_datetime).to_i if x.date < date_to
+      -x.change_pct
+    end
+  end
+
+  def symbol_date_hash(source)
+    dailies = {}
+    last_date = 0
+    source.each do |daily|
+      last_date = (daily.date.to_i) if daily.date.to_i >= last_date
+      dailies[daily.symbol] ||= {}
+      dailies[daily.symbol][daily.date.to_i] = daily
+    end
+    [dailies, last_date]
   end
 end

@@ -1,22 +1,29 @@
 table
-  - @dailies.each do |daily|
+  - @dailies.each do |sym, daily|
     tr
+      - last = daily[@last_date]
       td
-        a> href=market_path(daily.symbol)
-          = daily.symbol
-      td style='font-size:8pt' =daily.company&.name&.truncate(30)
-      td style='font-size:8pt' =daily.company&.category_name&.truncate(20)
-      td style='font-size:8pt'
+        a> href=market_path(sym)
+          = sym
+      td.f8 =last&.company&.name&.truncate(30)
+      td.f8 =last&.company&.category_name&.truncate(20)
+      td.f8
         | [
-        a href="https://www2.commsec.com.au/quotes/charts?stockCode=#{daily.symbol}&exchangeCode=ASX" target='chart'
+        - site = 'https://www2.commsec.com.au/quotes'
+        a href="#{site}/charts?stockCode=#{sym}&exchangeCode=ASX" target='chart'
           | Cht
         ' &nbsp;
-        a href="https://www2.commsec.com.au/quotes/?stockCode=#{daily.symbol}&exchangeCode=ASX" target='summary'
+        a href="#{site}/?stockCode=#{sym}&exchangeCode=ASX" target='summary'
           | Summ
         ' &nbsp;
-        a href="https://www2.commsec.com.au/quotes/announcements?stockCode=#{daily.symbol}&exchangeCode=ASX" target='announce'
+        a href="#{site}/announcements?stockCode=#{sym}&exchangeCode=ASX" target='announce'
           | Ann
         ' ]
-      td =daily.curr_val.round(3)
-      td =daily.change_val.round(3)
-      td =display_percentage(daily.change_pct)
+      td =last&.curr_val&.round(3)
+      td =last&.change_val&.round(3)
+      td =last&.date&.strftime('%d/%-m')
+      - (@last_date..@first_date).step(-1.day.to_i).each do |date|
+        - if daily[date]
+          td =display_percentage(daily[date]&.change_pct)
+        - else
+          td -
