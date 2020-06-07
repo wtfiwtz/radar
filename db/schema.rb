@@ -34,6 +34,7 @@ ActiveRecord::Schema.define(version: 2017_11_07_182430) do
     t.string "symbol"
     t.string "name"
     t.string "category_name"
+    t.bigint "market_cap"
     t.integer "category_id"
     t.index ["category_id"], name: "index_companies_on_category_id"
   end

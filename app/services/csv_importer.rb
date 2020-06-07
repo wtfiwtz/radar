@@ -1,5 +1,8 @@
 require 'csv'
 
+# DailySummary.delete_all
+# Daily.delete_all
+# Company.delete_all
 # CsvImporter.import_companies!
 # CsvImporter.import_historical!
 
@@ -13,7 +16,7 @@ class CsvImporter
 
     def import_historical!
       company_map = build_company_mapping
-      path = Rails.root.join('data', 'asx', 'prices', '2020jan').to_s
+      path = Rails.root.join('data', 'asx', 'prices', '2020').to_s
       files = Dir.glob(File.join(path, '**', '*.txt'))
       count = files.size
       files.each_with_index do |file, i|
@@ -32,8 +35,12 @@ class CsvImporter
     def read_company_csv
       companies = []
       filename = Rails.root.join('data', 'asx', 'securities', 'ASXListedCompanies.csv').to_s
-      CSV.foreach(filename) do |row|
-        companies.push(name: row[0], symbol: row[1], category_name: row[2])
+      CSV.foreach(filename, 'r', headers: true) do |row|
+        subst = row[3].gsub(/[^0-9]/, '')
+        market_cap = !subst.empty? ? Integer(subst) : nil
+        companies.push(name: row[1], symbol: row[0], category_name: row[2],
+                       market_cap: market_cap)
+        # companies.push(name: row[0], symbol: row[1], category_name: row[2])
       end
       companies
     end

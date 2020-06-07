@@ -4,6 +4,7 @@ class CreateCompany < ActiveRecord::Migration[5.1]
       t.string :symbol
       t.string :name
       t.string :category_name
+      t.bigint :market_cap
       t.references :category, null: true
     end
   end
